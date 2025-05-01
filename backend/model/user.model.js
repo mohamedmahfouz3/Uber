@@ -47,7 +47,17 @@ const userSchema = new mongoose.Schema({
     type: "boolean",
     default: false,
   },
-  isActive: {},
+  isActive: {
+    type: "boolean",
+    default: true,
+  },
+  createdAt: {
+    type: "date",
+    default: Date.now,
+  },
+  updatedAt: {
+    type: "date",
+    default: Date.now,
+  },
 });
-
 module.exports = mongoose.model("User", userSchema);
