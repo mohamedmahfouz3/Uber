@@ -1,10 +1,10 @@
-const userModel = require("../models/user.model");
+const userModel = require("../model/user.model");
 
 module.exports.createUser = async (req, res) => {
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, address } = req.body;
     // Validate the request body
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || address) {
       return res.status(400).json({ message: "All fields are required" });
     }
     // Check if the user already exists
@@ -13,18 +13,41 @@ module.exports.createUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
+    const hashedPassword = await userModel.hashPassword(password);
+
     const newUser = new userModel({
       fullName: {
         firstName: fullName.firstName,
         lastName: fullName.lastName,
       },
       email,
-      password,
+      password: hashedPassword,
+      address,
     });
     await newUser.save();
     res.status(201).json({ message: "User created successfully", newUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports.loginUser = async (email, password) => {
+  try {
+    const user = await userModel.findOne({ email }).select("+password");
+    console.log("User found for login:", user);
+    if (!user) {
+      throw new Error("Invalid email or password");
+    }
+    const isMatch = await user.comparePassword(password);
+    console.log("Password match result:", isMatch);
+    if (!isMatch) {
+      throw new Error("Invalid email or password");
+    }
+    const token = user.generateAuthToken();
+    return { user, token };
+  } catch (error) {
+    console.error("Login error:", error.message);
+    throw error;
   }
 };
 

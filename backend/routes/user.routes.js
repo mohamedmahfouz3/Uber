@@ -1,30 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
-const { validation } = require("express-validator");
-const userController = require("../controllers/user.controller");
+const { check } = require("express-validator");
 
 // Route to register a new user
 
 router.post(
   "/register",
   [
-    validation("fullName.firstName")
+    check("fullName.firstName")
       .isLength({ min: 3 })
       .withMessage("First name must be at least 3 characters long"),
-    validation("fullName.lastName")
+    check("fullName.lastName")
       .isLength({ min: 3 })
       .withMessage("Last name must be at least 3 characters long"),
-    validation("email").isEmail().withMessage("Invalid email format"),
-    validation("password")
+    check("email").isEmail().withMessage("Invalid email format"),
+    check("password")
       .isLength({ min: 8 })
       .withMessage("Password must be at least 8 characters long"),
-    validation("password")
+    check("password")
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{5,}$/)
       .withMessage(
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
-    validation("address")
+    check("address")
       .isLength({ min: 5 })
       .withMessage("Address must be at least 5 characters long"),
   ],
@@ -35,8 +34,8 @@ router.post(
 router.post(
   "/login",
   [
-    validation("email").isEmail().withMessage("Invalid email format"),
-    validation("password")
+    check("email").isEmail().withMessage("Invalid email format"),
+    check("password")
       .isLength({ min: 8 })
       .withMessage("Password must be at least 8 characters long"),
   ],
@@ -50,22 +49,22 @@ router.get("/:id", userController.getUserById);
 router.put(
   "/:id",
   [
-    validation("fullName.firstName")
+    check("fullName.firstName")
       .isLength({ min: 3 })
       .withMessage("First name must be at least 3 characters long"),
-    validation("fullName.lastName")
+    check("fullName.lastName")
       .isLength({ min: 3 })
       .withMessage("Last name must be at least 3 characters long"),
-    validation("email").isEmail().withMessage("Invalid email format"),
-    validation("password")
+    check("email").isEmail().withMessage("Invalid email format"),
+    check("password")
       .isLength({ min: 8 })
       .withMessage("Password must be at least 8 characters long"),
-    validation("password")
+    check("password")
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{5,}$/)
       .withMessage(
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
-    validation("address")
+    check("address")
       .isLength({ min: 5 })
       .withMessage("Address must be at least 5 characters long"),
   ],

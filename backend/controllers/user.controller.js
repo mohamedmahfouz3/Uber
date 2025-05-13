@@ -1,5 +1,7 @@
-const userModel = require("../models/user.model");
-const userService = require("../services/user.services");
+const userModel = require("../model/user.model");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
 
 // Function to register a new user
@@ -10,13 +12,38 @@ module.exports.registerUser = async (req, res) => {
       return res.status(422).json({ errors: errors.array() });
     }
     const { fullName, email, password, address } = req.body;
-    const user = await userService.registerUser(
-      fullName,
+    // hash the password
+    const hashedPassword = await userModel.hashPassword(password);
+    // check if the user already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    // create a new user
+    const newUser = await userService.createUser({
+      fullName: {
+        firstName: fullName.firstName,
+        lastName: fullName.lastName,
+      },
       email,
-      password,
-      address
-    );
-    return res.status(201).json(user);
+      password: hashedPassword,
+      address,
+    });
+    // save the user to the database
+    await newUser.save();
+    // generate a token
+    const token = newUser.generateAuthToken();
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        address: newUser.address,
+      },
+      token,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -25,12 +52,20 @@ module.exports.registerUser = async (req, res) => {
 module.exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    // Validate the request body
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
     const user = await userService.loginUser(email, password);
+
     return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 // Function to get all users
 module.exports.getAllUsers = async (req, res) => {
   try {
