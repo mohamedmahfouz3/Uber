@@ -27,6 +27,15 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: "string",
     minlength: [5, "password must be at least 5 characters long"],
+    select: false,
+
+    validate: {
+      validator: function (v) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{5,}$/.test(v);
+      },
+      message:
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+    },
   },
   socketId: {
     type: "string",
@@ -59,5 +68,30 @@ const userSchema = new mongoose.Schema({
     type: "date",
     default: Date.now,
   },
+});
+userSchema.methods.generateAuthToken = function () {
+  const token = jwt.sign(
+    {
+      id: this._id,
+    },
+    process.env.JWT_SECRET
+  );
+  return token;
+};
+
+userSchema.statics.hashPassword = async function (password) {
+  const salt = await bycrpt.genSalt(10);
+  const hashedPassword = await bycrpt.hash(password, salt);
+  return hashedPassword;
+};
+userSchema.methods.comparePassword = async function (password, hashedPassword) {
+  const isMatch = await bycrpt.compare(password, hashedPassword);
+  return isMatch;
+};
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    this.password = await userSchema.statics.hashPassword(this.password);
+  }
+  next();
 });
 module.exports = mongoose.model("User", userSchema);
