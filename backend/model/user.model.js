@@ -1,81 +1,119 @@
 const mongoose = require("mongoose");
-
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
   fullName: {
     firstName: {
+      type: String,
       required: true,
-      type: "string",
+      trim: true, // Trim spaces for consistency
     },
     lastName: {
-      type: "string",
+      type: String,
       required: true,
+      trim: true, // Trim spaces for consistency
     },
   },
-
   email: {
-    type: "string",
+    type: String,
     required: true,
     unique: true,
+    trim: true, // Trim spaces for consistency
+    lowercase: true, // Ensure email is stored in lowercase
   },
   password: {
+    type: String,
     required: true,
-    type: "string",
-
-    select: false,
+    select: false, // Exclude password by default when querying
   },
   socketId: {
-    type: "string",
+    type: String,
   },
   isVerified: {
-    type: "boolean",
+    type: Boolean,
     default: false,
   },
   isAdmin: {
-    type: "boolean",
+    type: Boolean,
     default: false,
   },
   isBanned: {
-    type: "boolean",
+    type: Boolean,
     default: false,
   },
   isDeleted: {
-    type: "boolean",
+    type: Boolean,
     default: false,
   },
   isActive: {
-    type: "boolean",
+    type: Boolean,
     default: true,
   },
   createdAt: {
-    type: "date",
+    type: Date,
     default: Date.now,
   },
   updatedAt: {
-    type: "date",
+    type: Date,
     default: Date.now,
   },
 });
+
+// Method to generate an authentication token (JWT)
 userSchema.methods.generateAuthToken = function () {
   const token = jwt.sign(
-    {
-      id: this._id,
-    },
-    process.env.JWT_SECRET
+    { _id: this._id, isAdmin: this.isAdmin },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" } // Token expiration time
   );
   return token;
 };
-userSchema.methods.comparePassword = async function (password) {
-  const isMatch = await bcrypt.compare(password, this.password);
-  return isMatch;
+// Method to generate a refresh token
+userSchema.methods.generateRefreshToken = function () {
+  const refreshToken = jwt.sign(
+    { _id: this._id, isAdmin: this.isAdmin },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "7d" } // Refresh token expiration time
+  );
+  return refreshToken;
 };
-userSchema.statics.hashPassword = async function (password) {
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
+// Method to generate a verification token
+userSchema.methods.generateVerificationToken = function () {
+  const verificationToken = jwt.sign(
+    { _id: this._id, isVerified: this.isVerified },
+    process.env.JWT_VERIFICATION_SECRET,
+    { expiresIn: "1d" } // Verification token expiration time
+  );
+  return verificationToken;
+};
+// Method to generate a password reset token
+userSchema.methods.generatePasswordResetToken = function () {
+  const passwordResetToken = jwt.sign(
+    { _id: this._id, isVerified: this.isVerified },
+    process.env.JWT_PASSWORD_RESET_SECRET,
+    { expiresIn: "1h" } // Password reset token expiration time
+  );
+  return passwordResetToken;
+};
+// Method to generate a verification token
+userSchema.methods.generateEmailVerificationToken = function () {
+  const emailVerificationToken = jwt.sign(
+    { _id: this._id, isVerified: this.isVerified },
+    process.env.JWT_EMAIL_VERIFICATION_SECRET,
+    { expiresIn: "1d" } // Email verification token expiration time
+  );
+  return emailVerificationToken;
 };
 
-const userModel = mongoose.model("user", userSchema);
+userSchema.statics.hashPassword = async function (password) {
+  return await bcrypt.hash(password, 10);
+};
+// Function to compare password with the stored hash
+userSchema.methods.comparePassword = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
+
+const userModel = mongoose.model("User", userSchema);
+// Export the user model
 module.exports = userModel;

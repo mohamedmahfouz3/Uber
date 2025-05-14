@@ -9,31 +9,42 @@ module.exports.registerUser = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
+
     const { fullName, email, password, address } = req.body;
-    // hash the password
+
+    // hash password
+
     const hashedPassword = await userModel.hashPassword(password);
-    // check if the user already exists
+    console.log("Hashed password:", hashedPassword);
+
+    // Check if the user already exists
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(409).json({ message: "User already exists" });
     }
-    // create a new user
+
+    // Create a new user
     const newUser = await userService.createUser({
-      fullName: {
-        firstName: fullName.firstName,
-        lastName: fullName.lastName,
-      },
+      fullName,
       email,
       password: hashedPassword,
       address,
     });
-    // save the user to the database
-    await newUser.save();
-    // generate a token
-    const token = newUser.generateAuthToken();
 
+    // Generate a token
+    const token = newUser.generateAuthToken();
+    console.log("Generated token:", token);
+    // Set the token in the response header
+    res.setHeader("Authorization", `Bearer ${token}`);
+    // Set the token in a cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    // Return the user data and token
     return res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -41,27 +52,65 @@ module.exports.registerUser = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         address: newUser.address,
+        password: newUser.password,
       },
       token,
     });
   } catch (error) {
+    console.error("Registration error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
+
 // Function to login a user
 module.exports.loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    // Validate the request body
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log("Validation errors:", errors.array());
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const user = await userService.loginUser(email, password);
+    const { email, password } = req.body;
+    console.log("Login attempt for email:", email);
+    // Check if the user exists
 
-    return res.status(200).json(user);
+    // Find the user and explicitly include the password field
+    const user = await userModel.findOne({ email }).select("+password");
+    if (!user) {
+      console.log("User not found for email:", email);
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    //compare the password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log("Password mismatch for email:", email);
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Generate a token
+    const token = user.generateAuthToken();
+
+    // Set the token in the response header
+    res.setHeader("Authorization", `Bearer ${token}`);
+    // Set the token in a cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+      token,
+    });
   } catch (error) {
+    console.error("Login error:", error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -116,7 +165,7 @@ module.exports.deleteUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json(user);
+    return res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
