@@ -27,44 +27,42 @@ module.exports.createUser = async (userData) => {
   return newUser;
 };
 
-module.exports.updateUserById = async (
-  id,
-  fullName,
-  email,
-  password,
-  address
-) => {
-  const user = await userModel.findById(id);
-  if (!user) {
-    return null;
-  }
-  if (fullName) {
-    user.fullName = fullName;
-  }
-  if (email) {
-    user.email = email;
-  }
-  if (password) {
-    user.password = password;
-  }
-  if (address) {
-    user.address = address;
-  }
-  await user.save();
-  return user;
+module.exports.getAllUsers = async () => {
+  return await userModel.find({ isDeleted: false });
+};
+
+module.exports.getUserById = async (id) => {
+  return await userModel.findOne({ _id: id, isDeleted: false });
+};
+
+module.exports.updateUserById = async (id, updateData) => {
+  return await userModel.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    updateData,
+    { new: true }
+  );
 };
 
 module.exports.deleteUserById = async (id) => {
-  const user = await userModel.findByIdAndDelete(id);
-  return user;
+  // Soft delete by setting isDeleted to true
+  return await userModel.findOneAndUpdate(
+    { _id: id, isDeleted: false },
+    { isDeleted: true },
+    { new: true }
+  );
 };
 
 module.exports.getDeletedUsers = async () => {
-  const deletedUsers = await userModel.find({ isDeleted: true });
-  return deletedUsers;
+  return await userModel.find({ isDeleted: true });
 };
 
 module.exports.getUsersByRole = async (role) => {
-  const users = await userModel.find({ role });
-  return users;
+  if (role === "admin") {
+    return await userModel.find({ isAdmin: true, isDeleted: false });
+  } else if (role === "user") {
+    return await userModel.find({ isAdmin: false, isDeleted: false });
+  } else {
+    // If role is not recognized, return empty array
+    return [];
+  }
 };
