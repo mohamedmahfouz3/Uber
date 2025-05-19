@@ -146,6 +146,38 @@ This document provides details about the available endpoints in the backend syst
 
 ---
 
-### Notes
-- Ensure that the request body contains all required fields with valid values.
-- Use the returned authentication token for secure requests to other endpoints.
+### 3. **Maps API Key Setup and Provider Configuration**
+
+This project supports two maps API providers:
+
+- **Google Maps API** (default)
+- **OpenStreetMap (OSM) with Nominatim and OSRM** (free alternative, no credit card required)
+
+#### Using Google Maps API
+
+To use Google Maps API, obtain an API key from the [Google Cloud Console](https://console.cloud.google.com/) and set it in your `.env` file:
+
+```
+MAPS_PROVIDER=google
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+```
+
+#### Using OpenStreetMap (OSM) Provider
+
+To use the free OpenStreetMap provider, set the following in your `.env` file:
+
+```
+MAPS_PROVIDER=osm
+```
+
+No API key is required for OSM.
+
+#### Notes
+
+- When using the OSM provider, the `getDistanceTime` endpoint expects origin and destination as addresses, which are internally converted to coordinates before routing.
+- The OSM provider uses the public Nominatim service for geocoding and OSRM for routing.
+- Ensure you respect the usage policies of these public services.
+
+---
+
+Please restart your backend server after changing environment variables.

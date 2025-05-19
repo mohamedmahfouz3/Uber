@@ -18,4 +18,30 @@ router.get(
   mapController.getAddressCoordinates
 );
 
+// Route to get distance and time between two locations
+router.get(
+  "/distance-time",
+  [
+    query("origin")
+      .isLength({ min: 3 })
+      .withMessage("Origin must be at least 3 characters long"),
+    query("destination")
+      .isLength({ min: 3 })
+      .withMessage("Destination must be at least 3 characters long"),
+  ],
+  authMiddleware.authUser,
+  mapController.getDistanceTime
+);
+// Route to get autocomplete suggestions
+router.get(
+  "/autocomplete",
+  [
+    query("input")
+      .isLength({ min: 3 })
+      .withMessage("Input must be at least 3 characters long"),
+  ],
+  authMiddleware.authUser,
+  mapController.getAutoCompleteSuggestions
+);
+
 module.exports = router;
