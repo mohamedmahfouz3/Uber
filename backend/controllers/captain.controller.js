@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/user.model");
 const { validationResult } = require("express-validator");
+const blacklistTokenSchema = require("../model/blacklistToken.model");
 
 // Function to register a new captain
 module.exports.registerCaptain = async (req, res) => {
@@ -85,6 +86,11 @@ module.exports.registerCaptain = async (req, res) => {
 
 // Function to login a captain
 module.exports.loginCaptain = async (req, res) => {
+  // Validate request body
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
   try {
     const { email, password } = req.body;
 
@@ -131,15 +137,37 @@ module.exports.loginCaptain = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+// Function to get the profile of the logged-in captain
+module.exports.getCaptainProfile = async (req, res) => {
+  // Validate request body
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  res.status(200).json({
+    message: "Captain profile retrieved successfully",
+    captain: req.captain,
+  });
+};
 
 // Function to logout a captain
 module.exports.logoutCaptain = async (req, res) => {
   try {
     // Clear the token from the cookie
     res.clearCookie("token");
-    return res.status(200).json({ message: "Captain logged out successfully" });
+    // Add the token to the blacklist
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const blacklistedToken = new blacklistTokenSchema({ token });
+      await blacklistedToken.save();
+    }
+    // Clear the token from the request headers
+    req.headers.authorization = null;
+
+    return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    console.error("Error logging out captain:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.error("Logout error:", error);
+    return res.status(500).json({ message: error.message });
   }
 };

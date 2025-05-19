@@ -3,12 +3,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
-const authMiddleware = require("../middlewares/auth.middleware");
 const blacklistTokenSchema = require("../model/blacklistToken.model");
+
 // Function to register a new user
 module.exports.registerUser = async (req, res) => {
   try {
     const errors = validationResult(req);
+    console.log("Validation errors:", errors.array());
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
@@ -84,9 +85,11 @@ module.exports.loginUser = async (req, res) => {
     }
 
     //compare the password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
+    console.log("Password match:", isMatch);
+    // If the password does not match, return an error
     if (!isMatch) {
-      console.log("Password mismatch for email:", email);
+      console.log("Invalid password for email:", email);
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
@@ -141,5 +144,3 @@ module.exports.logoutUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-// Function to get all users
