@@ -33,8 +33,8 @@ module.exports.createCaptain = async (captainData) => {
   }
   const captain = CaptainModel.create({
     fullName: {
-      firstName,
-      lastName,
+      firstName: fullName.firstName,
+      lastName: fullName.lastName,
     },
     email,
     password,

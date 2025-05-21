@@ -7,41 +7,21 @@ const { body } = require("express-validator");
 // Route to create a new ride
 router.post(
   "/create",
+  authMiddleware.authUser,
   [
-    body("pickupLocation")
-      .isLength({ min: 3 })
-      .withMessage("Pickup location must be at least 3 characters long"),
-    body("dropOffLocation")
-      .isLength({ min: 3 })
-      .withMessage("Drop-off location must be at least 3 characters long"),
-    body("fare").isNumeric().withMessage("Fare must be a number"),
+    body("pickup")
+      .isLength({ min: 5 })
+      .withMessage("Pickup location must be at least 5 characters long"),
+    body("destination")
+      .isLength({ min: 5 })
+      .withMessage("Destination location must be at least 5 characters long"),
+    body("vehicleType")
+      .isIn(["auto", "car", "bike", "van"])
+      .withMessage("Vehicle type must be either car, bike, or van"),
   ],
-  authMiddleware.authPassenger,
+
   rideController.createRide
 );
-/*
-// Route to get all rides for a passenger
-router.get(
-  '/passenger/:passengerId',
-  authMiddleware.authPassenger,
-  rideController.getAllRidesForPassenger
-);
-// Route to get all rides for a driver
-router.get(
-  '/driver/:driverId',
-  authMiddleware.authDriver,
-  rideController.getAllRidesForDriver
-);
-// Route to update ride status
-router.put(
-  '/update/:rideId',
-  [
-    body('status')
-      .isIn(['pending', 'in-progress', 'completed', 'canceled'])
-      .withMessage('Invalid status'),
-  ],
-  authMiddleware.authDriver,
-  rideController.updateRideStatus
-);
-// Route to delete a ride  
-*/
+
+//export the router
+module.exports = router;

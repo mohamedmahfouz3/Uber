@@ -1,37 +1,67 @@
 const rideModel = require("../model/ride.model");
 const mapService = require("../services/maps.service");
+const userModel = require("../model/user.model");
+
+const bcrypt = require("bcrypt");
+
+const crypto = require("crypto");
 
 // function to get fare
 async function getFare(pickup, destination) {
   if (!pickup || !destination) {
     throw new Error("Pickup and destination are required");
   }
-  const distanceTime = await mapService.getDistanceTime(pickup, destination);
-  const distance = distanceTime.distance; // in km
-  const duration = distanceTime.duration; // in seconds
-  const baseFare = 50; // base fare in currency
-  const perKmRate = 10; // fare per km in currency
-  const perMinuteRate = 2; // fare per minute in currency
-  const fare =
-    baseFare + distance * perKmRate + (duration / 60) * perMinuteRate;
-  // Round the fare to 2 decimal places
-  fare = Math.round(fare * 100) / 100;
 
+  // Get the distance and duration from the map service
+  const distanceTime = await mapService.getDistanceTime(pickup, destination);
+  if (!distanceTime) {
+    throw new Error("Failed to get distance and duration");
+  }
+  const distance = distanceTime.distance;
+  const duration = distanceTime.duration;
+  // Calculate the fare based on the distance and duration
+  const fare = {
+    auto: Math.round(distance * 1.5 + duration * 0.5),
+    car: Math.round(distance * 1.5 + duration * 0.5),
+    bike: Math.round(distance * 1.2 + duration * 0.3),
+    van: Math.round(distance * 2 + duration * 0.7),
+  };
+  // Check if the fare is valid
+  if (!fare.car || !fare.bike || !fare.van) {
+    throw new Error("Invalid fare calculation");
+  }
   // Return the fare
 
   return fare;
 }
+// function to get otp
+async function getOtp(number) {
+  function generateOtp() {
+    const otp = crypto
+      .randomInt(Math.pow(10, number - 1), Math.pow(10, number))
+      .toString();
+
+    return otp;
+  }
+  return generateOtp(number);
+}
+
 // function to create a ride
-async function createRide(userId, pickup, destination, vehicleType) {
+module.exports.createRide = async ({
+  user,
+  pickup,
+  destination,
+  vehicleType,
+}) => {
   // check validation
-  if (!userId || !pickup || !destination || !vehicleType) {
+  if (!user || !pickup || !destination || !vehicleType) {
     throw new Error(
       "User ID, pickup, destination, and vehicle type are required"
     );
   }
   // Check if the user exists
-  const user = await userModel.findById(userId);
-  if (!user) {
+  const userExists = await userModel.findById(user);
+  if (!userExists) {
     throw new Error("User not found");
   }
   // Check if the vehicle type is valid
@@ -53,12 +83,17 @@ async function createRide(userId, pickup, destination, vehicleType) {
   }
 
   try {
+    const distanceTime = await mapService.getDistanceTime(pickup, destination);
     const fare = await getFare(pickup, destination);
     const ride = await rideModel.create({
-      user: userId,
+      user: user,
       pickup: pickup,
       destination: destination,
+      fare: fare,
+      distance: distanceTime.distance,
+      duration: distanceTime.duration,
       fare: fare[vehicleType],
+      otp: getOtp(6),
     });
     // Save the ride to the database
     if (!ride) {
@@ -70,4 +105,4 @@ async function createRide(userId, pickup, destination, vehicleType) {
   } catch (error) {
     throw new Error("Error creating ride: " + error.message);
   }
-}
+};

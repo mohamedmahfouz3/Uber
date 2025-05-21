@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
 const mapService = require("../services/maps.service");
 
-const getAddressCoordinates = async (req, res) => {
+module.exports.getAddressCoordinates = async (req, res) => {
   // Validate request parameters
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -23,7 +23,7 @@ const getAddressCoordinates = async (req, res) => {
 
 // getDistanceTime function
 
-const getDistanceTime = async (req, res) => {
+module.exports.getDistanceTime = async (req, res) => {
   // Validate request parameters
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -45,7 +45,7 @@ const getDistanceTime = async (req, res) => {
 };
 // getAutoCompleteSuggestions function
 
-const getAutoCompleteSuggestions = async (req, res) => {
+module.exports.getAutoCompleteSuggestions = async (req, res) => {
   // Validate request parameters
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -62,11 +62,4 @@ const getAutoCompleteSuggestions = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-};
-
-// Export the controller functions
-module.exports = {
-  getAddressCoordinates,
-  getDistanceTime,
-  getAutoCompleteSuggestions,
 };

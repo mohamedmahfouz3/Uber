@@ -63,15 +63,17 @@ const rideSchema = new mongoose.Schema(
       type: Object,
     },
 
-    type: Date,
-    default: Date.now,
-
     orderId: {
       type: String,
     },
 
     signature: {
       type: String,
+    },
+    otp: {
+      type: String,
+      select: false,
+      required: true,
     },
   },
 

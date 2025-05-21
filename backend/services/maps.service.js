@@ -3,6 +3,13 @@ const axios = require("axios");
 module.exports.getAddressCoordinates = async (address) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
+  if (!apiKey) {
+    console.error("Google Maps API key is missing.");
+    throw new Error("Google Maps API key is missing.");
+  }
+
+  console.log("Using Google Maps API key.");
+
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
     address
   )}&key=${apiKey}`;
@@ -16,7 +23,11 @@ module.exports.getAddressCoordinates = async (address) => {
       };
     } else {
       console.error("Google Maps API error response:", response.data);
-      throw new Error("Unable to get coordinates");
+      throw new Error(
+        `Unable to get coordinates: ${
+          response.data.error_message || response.data.status
+        }`
+      );
     }
   } catch (error) {
     console.error("Error fetching coordinates:", error);
@@ -32,6 +43,11 @@ module.exports.getDistanceTime = async (origin, destination) => {
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
+  if (!apiKey) {
+    console.error("Google Maps API key is missing.");
+    throw new Error("Google Maps API key is missing.");
+  }
+
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
     origin
   )}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
@@ -46,7 +62,11 @@ module.exports.getDistanceTime = async (origin, destination) => {
       };
     } else {
       console.error("Google Maps API error response:", response.data);
-      throw new Error("Unable to get distance and time");
+      throw new Error(
+        `Unable to get distance and time: ${
+          response.data.error_message || response.data.status
+        }`
+      );
     }
   } catch (error) {
     console.error("Error fetching distance and time:", error);
@@ -62,6 +82,12 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
   }
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    console.error("Google Maps API key is missing.");
+    throw new Error("Google Maps API key is missing.");
+  }
+
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
     input
   )}&key=${apiKey}`;
@@ -74,7 +100,11 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
       }));
     } else {
       console.error("Google Maps API error response:", response.data);
-      throw new Error("Unable to get autocomplete suggestions");
+      throw new Error(
+        `Unable to get autocomplete suggestions: ${
+          response.data.error_message || response.data.status
+        }`
+      );
     }
   } catch (error) {
     console.error("Error fetching autocomplete suggestions:", error);
