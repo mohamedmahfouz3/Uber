@@ -111,3 +111,5 @@ module.exports.getAutoCompleteSuggestions = async (input) => {
     throw new Error("Error fetching autocomplete suggestions");
   }
 };
+
+
