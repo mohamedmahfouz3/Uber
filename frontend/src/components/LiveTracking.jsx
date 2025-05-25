@@ -10,9 +10,6 @@ const LiveTracking = ({ driver, onCancel }) => {
     const initMap = () => {
       if (!mapContainerRef.current) return;
 
-      // This is a placeholder for actual map initialization
-      // In a real application, you would use a mapping library like Google Maps, Mapbox, or Leaflet
-      // For now, we'll just show a placeholder with the driver's location
       const mapContainer = mapContainerRef.current;
       mapContainer.innerHTML = `
         <div class="w-full h-full bg-gray-100 flex items-center justify-center">
