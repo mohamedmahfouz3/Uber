@@ -1,73 +1,99 @@
-import React from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import UserSignUp from "./UserSignUp";
-import { useState } from "react";
+import { UserDataContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userData, setUseData] = useState({});
-  const handleSubmit = (e) => {
+  const { setUser } = useContext(UserDataContext);
+  const navigate = useNavigate();
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    setUseData({
-      email: email,
-      password: password,
-    });
-    console.log(userData);
+
+    try {
+      const response = await axios.post("http://localhost:5000/users/login", {
+        email,
+        password,
+      });
+
+      if (response.status === 200) {
+        const { user, token } = response.data;
+        setUser(user);
+        localStorage.setItem("token", token);
+        navigate("/home");
+      }
+    } catch (error) {
+      console.error(
+        "Login failed:",
+        error.response?.data?.message || error.message
+      );
+      // You might want to show an error message to the user here
+    }
+
     setEmail("");
     setPassword("");
   };
+
   return (
-    <div className="p-5 flex flex-col justify-between h-screen ">
+    <div className="p-7 h-screen flex flex-col justify-between">
       <div>
         <img
-          className="absolute top-4 left-4 w-16"
-          src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png"
-          alt="Uber logo"
+          className="w-16 mb-10"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s"
+          alt=""
         />
-        <form onSubmit={handleSubmit}>
-          <h3 className=" text-lg font-medium mb-3 mt-14 ">
-            {" "}
-            what's your email
-          </h3>
+
+        <form
+          onSubmit={(e) => {
+            submitHandler(e);
+          }}
+        >
+          <h3 className="text-lg font-medium mb-2">What's your email</h3>
           <input
             required
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
             }}
-            className=" bg-[#eeeeee]  rounded px-4 py-4 border w-full text-lg placeholder:text-xs"
+            className="bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
             type="email"
-            placeholder="your email@example.com"
+            placeholder="email@example.com"
           />
-          <h3 className=" text-lg font-medium mb-3 mt-3 ">enter password</h3>
+
+          <h3 className="text-lg font-medium mb-2">Enter Password</h3>
+
           <input
-            required
+            className="bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
             }}
-            className="bg-[#eeeeee] rounded px-4 py-4 border w-full text-lg placeholder:text-xs  "
+            required
             type="password"
-            placeholder="************"
+            placeholder="password"
           />
-          <button
-            className="bg-[#111] text-white mt-6 font-semibold mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-xl "
-            type="submit"
-          >
+
+          <button className="bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base">
             Login
           </button>
-          <p className="text-center">
-            <Link to="/UserSignUp" className="mb-7 text-blue-600 ">
-              Create New Account
-            </Link>
-          </p>{" "}
         </form>
+        <p className="text-center">
+          New here?{" "}
+          <Link to="/userSignUp" className="text-blue-600">
+            Create new Account
+          </Link>
+        </p>
       </div>
       <div>
-        <button className="bg-[#10b461] text-white mt-3 font-semibold mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-xl ">
-          Sign In as Captain{" "}
-        </button>
+        <Link
+          to="/CaptainLogin"
+          className="bg-[#10b461] flex items-center justify-center text-white font-semibold mb-5 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base"
+        >
+          Sign in as Captain
+        </Link>
       </div>
     </div>
   );
