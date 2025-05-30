@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import LoginUser from "./LoginUser";
 
 const Home = () => {
   return (
@@ -9,11 +11,14 @@ const Home = () => {
           src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png"
           alt="Uber logo"
         />
-        <div className="bg-white pb-7 py-4 px-4">
+        <div className="bg-white pb-7 py-4 px-4  ">
           <h2 className="text-2xl font-bold text-black text-center">
             Get started with Uber
           </h2>
-          <button className="flex items-center justify-center w-48 bg-black text-white py-3 rounded">
+          <Link
+            to="/LoginUser"
+            className="flex items-center justify-center w-48 bg-black text-white py-3 rounded"
+          >
             Continue
             <svg
               className="ml-2 w-5 h-5"
@@ -29,7 +34,7 @@ const Home = () => {
                 d="M9 5l7 7-7 7"
               ></path>
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
