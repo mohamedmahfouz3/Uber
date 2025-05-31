@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { UserDataContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");
@@ -14,15 +15,26 @@ const LoginUser = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:5000/users/login", {
+      const userData = {
         email,
         password,
-      });
+      };
+      // Only log the email for security
+      console.log("Login attempt for email:", userData.email);
+      const response = await axios.post(
+        "http://localhost:5000/users/login",
+        userData
+      );
 
       if (response.status === 200) {
         const { user, token } = response.data;
         setUser(user);
         localStorage.setItem("token", token);
+        Cookies.set("token", token, {
+          expires: 7, // expires in 7 days
+          secure: true, // only sent over HTTPS
+          sameSite: "strict", // protect against CSRF
+        });
         navigate("/home");
       }
     } catch (error) {

@@ -14,7 +14,7 @@ module.exports.registerUser = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullName, email, password, address } = req.body;
+    const { fullName, email, password } = req.body;
 
     // hash password
 
@@ -32,7 +32,6 @@ module.exports.registerUser = async (req, res) => {
       fullName,
       email,
       password: hashedPassword,
-      address,
     });
 
     // Generate a token
@@ -53,7 +52,6 @@ module.exports.registerUser = async (req, res) => {
         id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
-        address: newUser.address,
         password: newUser.password,
       },
       token,

@@ -3,26 +3,22 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports.createUser = async (userData) => {
-  const { fullName, email, password, address } = userData;
-  if (!fullName || !email || !password || !address) {
+  const { fullName, email, password } = userData;
+  if (!fullName || !email || !password) {
     throw new Error("All fields are required");
   }
   const existingUser = await userModel.findOne({ email });
   if (existingUser) {
     throw new Error("User already exists");
   }
-  //Hash the password using bcrypt
-  // Create a new user
 
-  // Remove explicit hashing here, let pre-save middleware handle it
-  const newUser = userModel.create({
+  const newUser = await userModel.create({
     fullName: {
       firstName: fullName.firstName,
       lastName: fullName.lastName,
     },
     email,
     password,
-    address,
   });
   return newUser;
 };
