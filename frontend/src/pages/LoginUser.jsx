@@ -4,6 +4,7 @@ import { UserDataContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const LoginUser = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +20,6 @@ const LoginUser = () => {
         email,
         password,
       };
-      // Only log the email for security
       console.log("Login attempt for email:", userData.email);
       const response = await axios.post(
         "http://localhost:5000/users/login",
@@ -35,6 +35,10 @@ const LoginUser = () => {
           secure: true, // only sent over HTTPS
           sameSite: "strict", // protect against CSRF
         });
+        toast.success("Login successful! Welcome back!", {
+          position: "top-center",
+          autoClose: 3000,
+        });
         navigate("/home");
       }
     } catch (error) {
@@ -42,7 +46,13 @@ const LoginUser = () => {
         "Login failed:",
         error.response?.data?.message || error.message
       );
-      // You might want to show an error message to the user here
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
+      );
     }
 
     setEmail("");
@@ -85,7 +95,9 @@ const LoginUser = () => {
             }}
             required
             type="password"
-            placeholder="password"
+            placeholder="••••••••"
+            name="password"
+            id="password"
           />
 
           <button className="bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base">

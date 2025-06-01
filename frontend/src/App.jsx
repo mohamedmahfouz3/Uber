@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import LoginUser from "./pages/LoginUser";
 import Home from "./pages/Home";
 import CaptainLogin from "./pages/CaptainLogin";
@@ -8,21 +8,37 @@ import CaptainSignUp from "./pages/captainSignUp";
 import Start from "./pages/Start";
 import UserContext from "./context/UserContext";
 import CaptainContext from "./context/captainContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
-    <UserContext>
-      <CaptainContext>
-        <Routes>
-          <Route path="/" element={<Start />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/LoginUser" element={<LoginUser />} />
-          <Route path="/captainLogin" element={<CaptainLogin />} />
-          <Route path="/userSignUp" element={<UserSignUp />} />
-          <Route path="/captainSignUp" element={<CaptainSignUp />} />
-        </Routes>
-      </CaptainContext>
-    </UserContext>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      <UserContext>
+        <CaptainContext>
+          <Routes>
+            <Route path="/" element={<Start />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/LoginUser" element={<LoginUser />} />
+            <Route path="/captainLogin" element={<CaptainLogin />} />
+            <Route path="/userSignUp" element={<UserSignUp />} />
+            <Route path="/captainSignUp" element={<CaptainSignUp />} />
+          </Routes>
+        </CaptainContext>
+      </UserContext>
+    </>
   );
 }
 

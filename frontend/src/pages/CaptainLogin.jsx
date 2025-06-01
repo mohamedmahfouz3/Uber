@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CaptainDataContext } from "../context/captainContext";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const CaptainLogin = () => {
   const [email, setEmail] = useState("");
@@ -15,20 +17,43 @@ const CaptainLogin = () => {
     e.preventDefault();
 
     try {
+      const captainData = {
+        email,
+        password,
+      };
+      console.log("Login attempt for email:", captainData.email);
       const response = await axios.post(
-        `http://localhost:5000/captains/login`,
-        { email, password }
+        "http://localhost:5000/captains/login",
+        captainData
       );
 
       if (response.status === 200) {
-        const data = response.data;
-        setCaptain(data.captain);
-        localStorage.setItem("token", data.token);
+        const { captain, token } = response.data;
+        setCaptain(captain);
+        localStorage.setItem("token", token);
+        Cookies.set("token", token, {
+          expires: 7,
+          secure: true,
+          sameSite: "strict",
+        });
+        toast.success("Login successful! Welcome back, Captain!", {
+          position: "top-center",
+          autoClose: 3000,
+        });
         navigate("/captain-home");
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      // You might want to show an error message to the user here
+      console.error(
+        "Login failed:",
+        error.response?.data?.message || error.message
+      );
+      toast.error(
+        error.response?.data?.message || "Login failed. Please try again.",
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
+      );
     }
 
     setEmail("");
@@ -79,7 +104,7 @@ const CaptainLogin = () => {
         </form>
         <p className="text-center">
           Join a fleet?{" "}
-          <Link to="/captain-signup" className="text-blue-600">
+          <Link to="/captainSignup" className="text-blue-600">
             Register as a Captain
           </Link>
         </p>
