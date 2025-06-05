@@ -6,6 +6,9 @@ import CaptainLogin from "./pages/CaptainLogin";
 import UserSignUp from "./pages/UserSignUp";
 import CaptainSignUp from "./pages/captainSignUp";
 import Start from "./pages/Start";
+import LogoutUser from "./pages/LogoutUser";
+import LogoutCaptain from "./pages/LogoutCaptain";
+import CaptainHome from "./pages/CaptainHome";
 import UserContext from "./context/UserContext";
 import CaptainContext from "./context/captainContext";
 import { ToastContainer } from "react-toastify";
@@ -35,6 +38,9 @@ function App() {
             <Route path="/captainLogin" element={<CaptainLogin />} />
             <Route path="/userSignUp" element={<UserSignUp />} />
             <Route path="/captainSignUp" element={<CaptainSignUp />} />
+            <Route path="/logout" element={<LogoutUser />} />
+            <Route path="/captain-logout" element={<LogoutCaptain />} />
+            <Route path="/captain-home" element={<CaptainHome />} />
           </Routes>
         </CaptainContext>
       </UserContext>
