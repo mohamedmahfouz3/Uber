@@ -36,17 +36,37 @@ const vehicleTypes = [
   },
 ];
 
-const VehiclePanel = ({ onVehicleSelect, selectedVehicle }) => {
+const VehiclePanel = ({ selectVehicle, selectedVehicle, fare }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
       <h2 className="text-lg font-semibold mb-4">Choose a ride</h2>
+      {fare && fare.fare && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-600">Estimated fare:</span>
+            <span className="font-semibold">${fare.fare.amount || "0.00"}</span>
+          </div>
+          {fare.distance && (
+            <div className="flex justify-between items-center text-sm mt-1">
+              <span className="text-gray-600">Distance:</span>
+              <span>{fare.distance.text || "Calculating..."}</span>
+            </div>
+          )}
+          {fare.duration && (
+            <div className="flex justify-between items-center text-sm mt-1">
+              <span className="text-gray-600">Duration:</span>
+              <span>{fare.duration.text || "Calculating..."}</span>
+            </div>
+          )}
+        </div>
+      )}
       <div className="space-y-3">
         {vehicleTypes.map((vehicle) => {
           const Icon = vehicle.icon;
           return (
             <button
               key={vehicle.id}
-              onClick={() => onVehicleSelect(vehicle)}
+              onClick={() => selectVehicle(vehicle)}
               className={`w-full flex items-center p-3 rounded-lg border transition-colors ${
                 selectedVehicle?.id === vehicle.id
                   ? "border-blue-500 bg-blue-50"
