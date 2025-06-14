@@ -1,57 +1,62 @@
 import React from "react";
-import { RiMapPinLine, RiTimeLine, RiMoneyDollarCircleLine } from "react-icons/ri";
 
-const ConfirmRide = ({ locations, selectedVehicle, onConfirm }) => {
-  if (!locations || !selectedVehicle) return null;
-
-  const { pickup, dropoff } = locations;
-
+const ConfirmRide = (props) => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 mb-4">
-      <h2 className="text-lg font-semibold mb-4">Confirm your ride</h2>
-      
-      {/* Location Details */}
-      <div className="space-y-4 mb-6">
-        <div className="flex items-start">
-          <div className="flex-shrink-0 mt-1">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <div className="w-0.5 h-8 bg-gray-300 mx-auto"></div>
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-          </div>
-          <div className="ml-3 space-y-4">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Pickup</p>
-              <p className="text-sm text-gray-500">{pickup}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">Dropoff</p>
-              <p className="text-sm text-gray-500">{dropoff}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Ride Details */}
-      <div className="border-t border-gray-200 pt-4 space-y-3">
-        <div className="flex items-center text-sm">
-          <RiTimeLine className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-gray-600">Estimated arrival time: {selectedVehicle.time}</span>
-        </div>
-        <div className="flex items-center text-sm">
-          <RiMoneyDollarCircleLine className="h-5 w-5 text-gray-400 mr-2" />
-          <span className="text-gray-600">Price range: {selectedVehicle.price}</span>
-        </div>
-      </div>
-
-      {/* Confirm Button */}
-      <button
-        onClick={onConfirm}
-        className="w-full mt-6 flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    <div>
+      <h5
+        className="p-1 text-center w-[93%] absolute top-0"
+        onClick={() => {
+          props.setConfirmRidePanel(false);
+        }}
       >
-        Confirm Ride
-      </button>
+        <i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i>
+      </h5>
+      <h3 className="text-2xl font-semibold mb-5">Confirm your Ride</h3>
+
+      <div className="flex gap-2 justify-between flex-col items-center">
+        <img
+          className="h-20"
+          src="https://swyft.pl/wp-content/uploads/2023/05/how-many-people-can-a-uberx-take.jpg"
+          alt=""
+        />
+        <div className="w-full mt-5">
+          <div className="flex items-center gap-5 p-3 border-b-2">
+            <i className="ri-map-pin-user-fill"></i>
+            <div>
+              <h3 className="text-lg font-medium">562/11-A</h3>
+              <p className="text-sm -mt-1 text-gray-600">{props.pickup}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-5 p-3 border-b-2">
+            <i className="text-lg ri-map-pin-2-fill"></i>
+            <div>
+              <h3 className="text-lg font-medium">562/11-A</h3>
+              <p className="text-sm -mt-1 text-gray-600">{props.destination}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-5 p-3">
+            <i className="ri-currency-line"></i>
+            <div>
+              <h3 className="text-lg font-medium">
+                ₹{props.fare[props.vehicleType]}
+              </h3>
+              <p className="text-sm -mt-1 text-gray-600">Cash Cash</p>
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            props.setVehicleFound(true);
+            props.setConfirmRidePanel(false);
+            props.createRide();
+          }}
+          className="w-full mt-5 bg-green-600 text-white font-semibold p-2 rounded-lg"
+        >
+          Confirm
+        </button>
+      </div>
     </div>
   );
 };
 
-export default ConfirmRide; 
+export default ConfirmRide;
