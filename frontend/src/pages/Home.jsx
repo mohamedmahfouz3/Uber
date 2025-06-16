@@ -82,6 +82,7 @@ const Home = () => {
         `http://localhost:5000/maps/get-suggestions`,
         {
           params: { input: value },
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -89,7 +90,10 @@ const Home = () => {
       );
       setPickupSuggestions(response.data);
     } catch (error) {
-      toast.error("Failed to fetch pickup suggestions");
+      const message =
+        error.response?.data?.message || "Failed to fetch pickup suggestions";
+      toast.error(message);
+      console.error("Pickup suggestions error:", error);
     } finally {
       setIsSearching(false);
     }
@@ -110,6 +114,7 @@ const Home = () => {
         `http://localhost:5000/maps/get-suggestions`,
         {
           params: { input: value },
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -117,7 +122,11 @@ const Home = () => {
       );
       setDestinationSuggestions(response.data);
     } catch (error) {
-      toast.error("Failed to fetch destination suggestions");
+      const message =
+        error.response?.data?.message ||
+        "Failed to fetch destination suggestions";
+      toast.error(message);
+      console.error("Destination suggestions error:", error);
     } finally {
       setIsSearching(false);
     }
@@ -209,6 +218,7 @@ const Home = () => {
     try {
       const response = await axios.get(`http://localhost:5000/rides/get-fare`, {
         params: { pickup, destination },
+        withCredentials: true,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -218,26 +228,38 @@ const Home = () => {
       setVehiclePanel(true);
       setPanelOpen(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to calculate fare");
+      const message =
+        error.response?.data?.message || "Failed to calculate fare";
+      toast.error(message);
+      console.error("Find trip error:", error);
     } finally {
       setIsLoading(false);
     }
   }
 
   async function createRide() {
-    await axios.post(
-      `http://localhost:5000/rides/create`,
-      {
-        pickup,
-        destination,
-        vehicleType,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/rides/create`,
+        {
+          pickup,
+          destination,
+          vehicleType,
         },
-      }
-    );
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to create ride";
+      toast.error(message);
+      console.error("Create ride error:", error);
+      throw error;
+    }
   }
 
   return (

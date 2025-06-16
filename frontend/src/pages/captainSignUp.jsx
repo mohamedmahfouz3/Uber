@@ -140,15 +140,20 @@ const CaptainSignup = () => {
         },
       };
 
-      // Log the exact data being sent
       console.log(
         "Full registration data:",
         JSON.stringify(captainData, null, 2)
       );
 
       const response = await axios.post(
-        `http://localhost:5000/captains/register`,
-        captainData
+        "http://localhost:5000/captains/register",
+        captainData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       console.log("Registration response:", response.data);
@@ -156,13 +161,12 @@ const CaptainSignup = () => {
       if (response.status === 201) {
         const { captain, token } = response.data;
         setCaptain(captain);
-        localStorage.setItem("token", token);
-        Cookies.set("token", token, {
+        localStorage.setItem("captainToken", token);
+        Cookies.set("captainToken", token, {
           expires: 7,
-          secure: true,
-          sameSite: "strict",
+          secure: window.location.protocol === "https:",
+          sameSite: "lax",
         });
-        // Show success toast instead of alert
         toast.success("Captain account created successfully!", {
           position: "top-center",
           autoClose: 3000,
@@ -171,7 +175,7 @@ const CaptainSignup = () => {
           pauseOnHover: true,
           draggable: true,
         });
-        navigate("/captain-home");
+        navigate("/captain/home");
       }
     } catch (error) {
       console.error("Registration error details:", {
@@ -180,7 +184,6 @@ const CaptainSignup = () => {
         message: error.message,
       });
 
-      // Log the validation errors in detail
       if (error.response?.data?.errors) {
         console.log(
           "Validation errors:",
@@ -217,11 +220,11 @@ const CaptainSignup = () => {
           autoClose: 5000,
         });
       } else {
-        const errorMessage =
+        const message =
           error.response?.data?.message ||
           "Registration failed. Please try again.";
-        setError(errorMessage);
-        toast.error(errorMessage, {
+        setError(message);
+        toast.error(message, {
           position: "top-center",
           autoClose: 5000,
         });

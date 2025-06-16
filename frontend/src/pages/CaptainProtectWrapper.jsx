@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { CaptainDataContext } from "../context/captainContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Cookies from "js-cookie";
+import { toast } from "react-hot-toast";
 
 const CaptainProtectWrapper = ({ children }) => {
   const token = localStorage.getItem("captainToken");
@@ -22,13 +24,14 @@ const CaptainProtectWrapper = ({ children }) => {
         const response = await axios.get(
           "http://localhost:5000/captains/profile",
           {
+            withCredentials: true,
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
 
-        // The backend returns the captain data in response.data.captain
         if (response.data?.captain) {
           setCaptain(response.data.captain);
           setError(null);
@@ -37,18 +40,23 @@ const CaptainProtectWrapper = ({ children }) => {
         }
       } catch (error) {
         console.error("Captain authentication error:", error);
-        setError(error.response?.data?.message || "Authentication failed");
+        const message =
+          error.response?.data?.message || "Authentication failed";
+        setError(message);
 
         // Clear invalid token
         localStorage.removeItem("captainToken");
+        Cookies.remove("captainToken");
 
         // Handle specific error cases
         if (error.response?.status === 401) {
           navigate("/captain/login");
         } else {
-          // For other errors, you might want to show an error message
-          // or handle them differently
           console.error("Unexpected error:", error);
+          toast.error(message, {
+            position: "top-center",
+            autoClose: 5000,
+          });
         }
       } finally {
         setIsLoading(false);

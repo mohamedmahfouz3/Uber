@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { UserDataContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Cookies from "js-cookie";
+import { toast } from "react-toastify";
 
 const UserProtectWrapper = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -22,13 +24,14 @@ const UserProtectWrapper = ({ children }) => {
         const response = await axios.get(
           "http://localhost:5000/users/profile",
           {
+            withCredentials: true,
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
 
-        // The backend returns the full user object
         if (response.data) {
           setUser(response.data);
           setError(null);
@@ -37,18 +40,23 @@ const UserProtectWrapper = ({ children }) => {
         }
       } catch (error) {
         console.error("Authentication error:", error);
-        setError(error.response?.data?.message || "Authentication failed");
+        const message =
+          error.response?.data?.message || "Authentication failed";
+        setError(message);
 
         // Clear invalid token
         localStorage.removeItem("token");
+        Cookies.remove("token");
 
         // Handle specific error cases
         if (error.response?.status === 401) {
           navigate("/login");
         } else {
-          // For other errors, you might want to show an error message
-          // or handle them differently
           console.error("Unexpected error:", error);
+          toast.error(message, {
+            position: "top-center",
+            autoClose: 5000,
+          });
         }
       } finally {
         setIsLoading(false);

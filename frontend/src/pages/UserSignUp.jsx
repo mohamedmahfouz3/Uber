@@ -31,7 +31,13 @@ const UserSignup = () => {
 
       const response = await axios.post(
         "http://localhost:5000/users/register",
-        userData
+        userData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (response.status === 201) {
@@ -40,8 +46,8 @@ const UserSignup = () => {
         localStorage.setItem("token", token);
         Cookies.set("token", token, {
           expires: 7,
-          secure: true,
-          sameSite: "strict",
+          secure: window.location.protocol === "https:",
+          sameSite: "lax",
         });
         toast.success("Account created successfully! Welcome to Uber!", {
           position: "top-center",
@@ -70,14 +76,13 @@ const UserSignup = () => {
           autoClose: 5000,
         });
       } else {
-        toast.error(
+        const message =
           error.response?.data?.message ||
-            "Registration failed. Please try again.",
-          {
-            position: "top-center",
-            autoClose: 5000,
-          }
-        );
+          "Registration failed. Please try again.";
+        toast.error(message, {
+          position: "top-center",
+          autoClose: 5000,
+        });
       }
     }
 

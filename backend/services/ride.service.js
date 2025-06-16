@@ -2,11 +2,10 @@ const Ride = require("../model/ride.model");
 const User = require("../model/user.model");
 const Captain = require("../model/captain.model");
 const mapService = require("./maps.service");
-const paymentService = require("./payment.service");
 const notificationService = require("./notification.service");
 const { AppError } = require("../utils/appError");
 const { calculateFare } = require("../utils/fareCalculator");
-const { validateCoordinates } = require("../utils/validators");
+const { validateCoordinates } = require("../utils/validateCoordinates.js");
 
 // Constants
 const DEFAULT_SEARCH_RADIUS = 5000; // 5km
@@ -15,6 +14,33 @@ const OTP_EXPIRY_MINUTES = 10;
 const ESTIMATED_ARRIVAL_MINUTES = 15;
 
 class RideService {
+  /**
+   * Calculate fare based on distance and duration
+   * @param {number} distance - Distance in kilometers
+   * @param {number} duration - Duration in minutes
+   * @returns {number} Calculated fare
+   */
+  static async calculateFare(distance, duration) {
+    // Base fare
+    const baseFare = 50;
+
+    // Per kilometer rate
+    const perKmRate = 15;
+
+    // Per minute rate
+    const perMinRate = 2;
+
+    // Calculate fare components
+    const distanceFare = distance * perKmRate;
+    const timeFare = duration * perMinRate;
+
+    // Total fare
+    const totalFare = baseFare + distanceFare + timeFare;
+
+    // Round to nearest rupee
+    return Math.round(totalFare);
+  }
+
   /**
    * Create a new ride request
    */
@@ -195,14 +221,6 @@ class RideService {
       throw new AppError("Ride cannot be completed", 400);
     }
 
-    // Process payment
-    try {
-      const payment = await paymentService.processRidePayment(ride);
-      ride.payment = payment;
-    } catch (error) {
-      throw new AppError("Payment processing failed", 400);
-    }
-
     ride.status = "COMPLETED";
     await ride.save();
 
@@ -220,7 +238,6 @@ class RideService {
         type: "RIDE_COMPLETED",
         rideId: ride._id,
         fare: ride.fare,
-        payment: ride.payment,
       });
     }
 

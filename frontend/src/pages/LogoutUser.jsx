@@ -12,9 +12,12 @@ const LogoutUser = () => {
   useEffect(() => {
     const logout = async () => {
       try {
-        // Call the logout endpoint
         await axios.get("http://localhost:5000/users/logout", {
-          withCredentials: true, // Important for cookies
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         });
 
         // Clear local storage and cookies
@@ -24,17 +27,18 @@ const LogoutUser = () => {
         // Clear user context
         setUser(null);
 
-        // Show success message
         toast.success("Logged out successfully!", {
           position: "top-center",
           autoClose: 3000,
         });
 
-        // Redirect to login page
         navigate("/login");
       } catch (error) {
         console.error("Logout error:", error);
-        toast.error("Error during logout. Please try again.", {
+        const message =
+          error.response?.data?.message ||
+          "Error during logout. Please try again.";
+        toast.error(message, {
           position: "top-center",
           autoClose: 5000,
         });

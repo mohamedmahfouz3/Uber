@@ -12,34 +12,38 @@ const LogoutCaptain = () => {
   useEffect(() => {
     const logout = async () => {
       try {
-        // Call the logout endpoint
         await axios.get("http://localhost:5000/captains/logout", {
-          withCredentials: true, // Important for cookies
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("captainToken")}`,
+            "Content-Type": "application/json",
+          },
         });
 
         // Clear local storage and cookies
-        localStorage.removeItem("token");
-        Cookies.remove("token");
+        localStorage.removeItem("captainToken");
+        Cookies.remove("captainToken");
 
         // Clear captain context
         setCaptain(null);
 
-        // Show success message
         toast.success("Logged out successfully!", {
           position: "top-center",
           autoClose: 3000,
         });
 
-        // Redirect to captain login page
-        navigate("/captainLogin");
+        navigate("/captain/login");
       } catch (error) {
         console.error("Logout error:", error);
-        toast.error("Error during logout. Please try again.", {
+        const message =
+          error.response?.data?.message ||
+          "Error during logout. Please try again.";
+        toast.error(message, {
           position: "top-center",
           autoClose: 5000,
         });
         // Still redirect to login even if there's an error
-        navigate("/captainLogin");
+        navigate("/captain/login");
       }
     };
 

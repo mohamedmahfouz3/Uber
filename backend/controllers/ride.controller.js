@@ -1,8 +1,8 @@
 const RideService = require("../services/ride.service");
 const { AppError } = require("../utils/appError");
-const { catchAsync } = require("../utils/catchAsync");
-const { sendMessageToSocketId } = require("../socket");
+const { catchAsync } = require("../utils/appError");
 const mapService = require("../services/maps.service");
+const { sendMessageToSocketId } = require("../socket");
 
 /**
  * Create a new ride request
@@ -389,5 +389,56 @@ exports.getRideDetails = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     data: { ride },
+  });
+});
+
+/**
+ * Get fare estimate for a ride
+ * @route GET /api/rides/get-fare
+ * @access Private (User)
+ */
+exports.getFare = catchAsync(async (req, res, next) => {
+  const { pickup, destination } = req.query;
+
+  // Validate required fields
+  if (!pickup || !destination) {
+    return next(
+      new AppError("Pickup and destination locations are required", 400)
+    );
+  }
+
+  // Get coordinates for pickup and destination if only addresses provided
+  let pickupCoords, destCoords;
+  try {
+    pickupCoords = await mapService.getAddressCoordinates(pickup);
+    destCoords = await mapService.getAddressCoordinates(destination);
+  } catch (error) {
+    return next(new AppError("Could not resolve address coordinates", 400));
+  }
+
+  // Get distance and time between locations
+  const { distance, duration } = await mapService.getDistanceTime(
+    pickupCoords,
+    destCoords
+  );
+
+  // Calculate fare based on distance and time
+  const fare = await RideService.calculateFare(distance, duration);
+
+  res.status(200).json({
+    status: "success",
+    data: {
+      fare,
+      distance,
+      duration,
+      pickup: {
+        address: pickup,
+        coordinates: pickupCoords,
+      },
+      destination: {
+        address: destination,
+        coordinates: destCoords,
+      },
+    },
   });
 });

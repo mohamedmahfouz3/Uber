@@ -24,36 +24,41 @@ const CaptainLogin = () => {
       console.log("Login attempt for email:", captainData.email);
       const response = await axios.post(
         "http://localhost:5000/captains/login",
-        captainData
+        captainData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (response.status === 200) {
         const { captain, token } = response.data;
         setCaptain(captain);
-        localStorage.setItem("token", token);
-        Cookies.set("token", token, {
+        localStorage.setItem("captainToken", token);
+        Cookies.set("captainToken", token, {
           expires: 7,
-          secure: true,
-          sameSite: "strict",
+          secure: window.location.protocol === "https:",
+          sameSite: "lax",
         });
         toast.success("Login successful! Welcome back, Captain!", {
           position: "top-center",
           autoClose: 3000,
         });
-        navigate("/captain-home");
+        navigate("/captain/home");
       }
     } catch (error) {
       console.error(
         "Login failed:",
         error.response?.data?.message || error.message
       );
-      toast.error(
-        error.response?.data?.message || "Login failed. Please try again.",
-        {
-          position: "top-center",
-          autoClose: 5000,
-        }
-      );
+      const message =
+        error.response?.data?.message || "Login failed. Please try again.";
+      toast.error(message, {
+        position: "top-center",
+        autoClose: 5000,
+      });
     }
 
     setEmail("");

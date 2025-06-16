@@ -2,6 +2,39 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const notificationSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        "RIDE_CONFIRMED",
+        "RIDE_STARTED",
+        "RIDE_COMPLETED",
+        "RIDE_CANCELLED",
+        "CAPTAIN_LOCATION_UPDATE",
+      ],
+    },
+    message: {
+      type: String,
+      required: true,
+    },
+    data: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: true }
+);
+
 const userSchema = new mongoose.Schema({
   fullName: {
     firstName: {
@@ -58,6 +91,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  notifications: [notificationSchema],
 });
 
 // Method to generate an authentication token (JWT)

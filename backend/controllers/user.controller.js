@@ -17,7 +17,6 @@ module.exports.registerUser = async (req, res) => {
     const { fullName, email, password } = req.body;
 
     // hash password
-
     const hashedPassword = await userModel.hashPassword(password);
     console.log("Hashed password:", hashedPassword);
 
@@ -37,14 +36,18 @@ module.exports.registerUser = async (req, res) => {
     // Generate a token
     const token = newUser.generateAuthToken();
     console.log("Generated token:", token);
+
     // Set the token in the response header
     res.setHeader("Authorization", `Bearer ${token}`);
-    // Set the token in a cookie
+
+    // Set the token in a cookie with CORS-compatible settings
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
+
     // Return the user data and token
     return res.status(201).json({
       message: "User registered successfully",
@@ -52,7 +55,6 @@ module.exports.registerUser = async (req, res) => {
         id: newUser._id,
         fullName: newUser.fullName,
         email: newUser.email,
-        password: newUser.password,
       },
       token,
     });
@@ -73,7 +75,6 @@ module.exports.loginUser = async (req, res) => {
 
     const { email, password } = req.body;
     console.log("Login attempt for email:", email);
-    // Check if the user exists
 
     // Find the user and explicitly include the password field
     const user = await userModel.findOne({ email }).select("+password");
@@ -96,10 +97,12 @@ module.exports.loginUser = async (req, res) => {
 
     // Set the token in the response header
     res.setHeader("Authorization", `Bearer ${token}`);
-    // Set the token in a cookie
+
+    // Set the token in a cookie with CORS-compatible settings
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
